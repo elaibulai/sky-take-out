@@ -11,6 +11,7 @@ import com.sky.vo.DishVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class DishController {
      */
     @PostMapping
     @ApiOperation("新增菜品")
+    @CacheEvict(cacheNames = "dishCache",key = "#dishDTO.categoryId")
     public Result save(@RequestBody DishDTO dishDTO){
         dishService.save(dishDTO);
         return Result.success();
@@ -53,6 +55,7 @@ public class DishController {
      */
     @DeleteMapping
     @ApiOperation("删除菜品")
+    @CacheEvict(cacheNames = "dishCache",allEntries = true)
     public Result delete(@RequestParam List<Long> ids){
         dishService.delete(ids);
         return Result.success();
@@ -77,8 +80,21 @@ public class DishController {
      */
     @PutMapping()
     @ApiOperation("修改菜品")
+    @CacheEvict(cacheNames = "dishCache",allEntries = true)
     public Result update(@RequestBody DishDTO dishDTO){
         dishService.update(dishDTO);
         return Result.success();
+    }
+
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    @GetMapping("/list")
+    @ApiOperation("根据分类id查询菜品")
+    public Result<List<Dish>> list(Long categoryId){
+        List<Dish> list = dishService.list(categoryId);
+        return Result.success(list);
     }
 }
